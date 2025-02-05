@@ -62,4 +62,4 @@ main.plugins.digivice.xpbar_position = "53,62"
 
 ❤️ Credits and Thanks.
 
-Akiyoshi Hongo, Bandai, Pwnagotchi devs EvilSocket and Jayofelony. Everyone else who made their plugins public. 
+Akiyoshi Hongo, Bandai, Pwnagotchi devs, airshuffler for the sprites and everyone else who made their plugins public. 
