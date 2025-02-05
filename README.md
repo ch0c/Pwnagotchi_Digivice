@@ -14,11 +14,11 @@ Turn your Pwnagotchi into a digital monster with **Digivice Plugin**, a plugin i
   - Garurumon, Metal Garurumon  
   - Numemon, Monzaemon  
   - Kabuterimon, Skull Greymon  
-- **Dynamic Faces** – Your Pwnagotchi's face updates automatically as it evolves.  
+
 - **Live Stats** – Displays your Digimon’s **form, age, EXP bar, and handshake count** in the UI.  
 - **Auto-Saving & Config Updates** – Tracks progress and updates `config.toml`.  
 - **Auto-Restart on Evolution** – Ensures smooth transitions when evolving.  
-- **Evolution Reset** – Every **5 days**, your Digimon resets to an egg for a fresh start.  
+- **Evolution Reset** – Every **5 days**, your Digimon resets to an either Agumon or Gabumon for a fresh start.  
 
 ---
 
