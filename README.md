@@ -1,5 +1,7 @@
 # Digivice – A Digimon Evolution Plugin for Pwnagotchi  
 
+![Alt text](preview.png)
+
 Turn your Pwnagotchi into a digital monster with **Digivice Plugin**, a plugin inspired by classic Digivices! Just like in the old-school Digimon toys, your Pwnagotchi will gain experience (EXP), grow older, and evolve into different forms based on its activity.  
 
 ---
