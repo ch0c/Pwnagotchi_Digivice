@@ -7,7 +7,7 @@ from datetime import datetime
 import pwnagotchi
 import pwnagotchi.plugins as plugins
 import pwnagotchi.ui.fonts as fonts
-from pwnagotchi.ui.components import LabeledValue, Rect, FilledRect, Line, Bitmap
+from pwnagotchi.ui.components import LabeledValue, Text, Rect, FilledRect, Line, Bitmap
 from pwnagotchi.ui.view import BLACK, WHITE
 from pwnagotchi.utils import save_config
 from PIL import Image
@@ -179,19 +179,22 @@ class Digivice(plugins.Plugin):
 
     def on_ui_setup(self, ui):
         """Add EXP bar, Age counter, and Current Form to UI."""
+        ui.add_element('name', Text(color=BLACK, value=' ', position=(200, 200), font=fonts.Medium))
+        ui.add_element('channel', LabeledValue(color=BLACK, label='CH', value="00", position=(2, 0), label_font=fonts.Bold, text_font=fonts.Medium))
+        ui.add_element('aps', LabeledValue(color=BLACK, label='APS', value="00", position=(30, 0), label_font=fonts.Bold, text_font=fonts.Medium))
+        ui.add_element('shakes', LabeledValue(color=BLACK, label='PWND ', value='0 (00)', position=(2, 109), label_font=fonts.Bold, text_font=fonts.Bold))
+        ui.add_element('mode', Text(value='AUTO', position=(225, 109), font=fonts.Bold, color=BLACK))
+
         window_border = Rect(xy=(0, 0, 249, 121), color=BLACK)
         ui.add_element('window_border', window_border)
 
         digivice_border = Rect(xy=(0, 14, 123, 76), color=BLACK)
         ui.add_element('digivice_border', digivice_border)
         
-        status_border = Rect(xy=(123, 14, 249, 65), color=BLACK)
-        ui.add_element('status_border', status_border)
+        status_divider = Line(xy=(123, 76, 250, 76), color=BLACK, width=1)
+        ui.add_element('status_divider', status_divider)
 
-        lower_divider = Line(xy=(123, 76, 123, 108), color=BLACK, width=1)
-        ui.add_element('lower_divider', lower_divider)
-
-        ui.add_element('current_form', LabeledValue(color=BLACK, label='', value="", position=(2, 14), label_font=fonts.Small, text_font=fonts.Bold))
+        ui.add_element('current_form', Text(color=BLACK, value="", position=(1, 14), font=fonts.Bold))
         
         self.age_icon = Bitmap(AGE_ICON_PATH, xy=(94, 18), color=BLACK)
         ui.add_element('age_icon', self.age_icon)
@@ -208,7 +211,7 @@ class Digivice(plugins.Plugin):
             self.exp_bar_rect = Rect(xy=(xpbar_x, xpbar_y, xpbar_x + 60, xpbar_y + 8), color=BLACK)
             ui.add_element('exp_bar_rect', self.exp_bar_rect)
             self.exp_bar_fill = FilledRect(xy=(xpbar_x + 1, xpbar_y + 1, xpbar_x + 1, xpbar_y + 7), color=BLACK) 
-            ui.add_element('exp_bar_fill', self.exp_bar_fill) 
+            ui.add_element('exp_bar_fill', self.exp_bar_fill)
 
     def on_ui_update(self, ui):
         """Updates the UI with EXP progress, Age, and Current Form."""
