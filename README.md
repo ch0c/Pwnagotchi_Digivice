@@ -84,12 +84,9 @@ ui.faces.position_y = 26
 
 ```
 
-### Tweak-View Options. 
-This is to hide the device's *main.name*.
 
-```
-    "VSS.name.xy": "400,400"
-```
+
+
 
 
 
