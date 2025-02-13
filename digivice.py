@@ -182,7 +182,7 @@ class Digivice(plugins.Plugin):
         ui.add_element('name', Text(color=BLACK, value=' ', position=(200, 200), font=fonts.Medium))
         ui.add_element('channel', LabeledValue(color=BLACK, label='CH', value="00", position=(2, 0), label_font=fonts.Bold, text_font=fonts.Medium))
         ui.add_element('aps', LabeledValue(color=BLACK, label='APS', value="00", position=(30, 0), label_font=fonts.Bold, text_font=fonts.Medium))
-        ui.add_element('shakes', LabeledValue(color=BLACK, label='PWND ', value='0 (00)', position=(2, 109), label_font=fonts.Bold, text_font=fonts.Bold))
+        ui.add_element('shakes', LabeledValue(color=BLACK, label='PWND ', value='0 (00)', position=(2, 109), label_font=fonts.Bold, text_font=fonts.Medium))
         ui.add_element('mode', Text(value='AUTO', position=(225, 109), font=fonts.Bold, color=BLACK))
 
         window_border = Rect(xy=(0, 0, 249, 121), color=BLACK)
