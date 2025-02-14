@@ -30,22 +30,24 @@ EVOLVE_ICON_PATH = "/custom-faces/evolve.png"
 
 class Digivice(plugins.Plugin):
     __author__ = 'choc'
-    __version__ = '1.0.1'
+    __version__ = '1.0.2'
     __license__ = 'GPL3'
-    __description__ = 'Digivice Plugin with Age & EXP Evolution'
+    __description__ = '''Digivice Plugin with Age & EXP Evolution'''
 
     def __init__(self):
         self.exp = 0
         self.age_days = 0
         self.current_form = None
-        self.start_time = None  
-        self.last_evolution_check = 0  
+        self.start_time = None
+        self.last_evolution_check = 0
         self.last_exp = 0
         self.last_age_days = 0
         self.assoc_count = 0
         self.deauth_count = 0
         self.handshake_count = 0
-        self.starter = None
+        self.starter = "random"
+        self.digistats = True
+        self.sessionstats = False
 
     def on_loaded(self):
         """Load configuration options and initialize data."""
@@ -57,24 +59,35 @@ class Digivice(plugins.Plugin):
         self.load_data()
 
     def load_data(self):
-        """Load EXP and age data from a single JSON file."""
         try:
             if os.path.exists(EXP_FILE):
                 with open(EXP_FILE, "r") as f:
                     data = json.load(f)
-                    self.exp = data.get("exp", 0)
-                    self.current_form = data.get("current_form")
+
+                    self.exp = data.get("exp", self.exp)  
+                    self.current_form = data.get("current_form", self.select_starting_digimon())
+                    
+                    if self.options['sessionstats']:
+                        self.assoc_count = 0
+                        self.deauth_count = 0
+                        self.handshake_count = 0        
+                    else:
+                        self.assoc_count = data.get("assoc_count", self.assoc_count)
+                        self.deauth_count = data.get("deauth_count", self.deauth_count)
+                        self.handshake_count = data.get("handshake_count", self.handshake_count)
+
                     start_time_str = data.get("start_time")
                     if start_time_str:
                         self.start_time = datetime.fromisoformat(start_time_str)
                     else:
-                        self.start_time = datetime.now()
-                    
+                        if self.start_time is None:
+                            self.start_time = datetime.now()
+
+                    self.age_days = (datetime.now() - self.start_time).days
+
                     if self.current_form not in FACE_FOLDERS:
                         logging.warning(f"[Digivice] Invalid current_form '{self.current_form}'. Resetting to starter.")
                         self.current_form = self.select_starting_digimon()
-                    
-                    self.age_days = (datetime.now() - self.start_time).days
             else:
                 logging.info("[Digivice] EXP file not found. Initializing new data.")
                 self.current_form = self.select_starting_digimon()
@@ -82,31 +95,31 @@ class Digivice(plugins.Plugin):
                 self.save_data(first_time=True)
                 self.modify_config()
                 self.restart_device()
-        except json.JSONDecodeError as je:
+
+        except (json.JSONDecodeError, ValueError) as je:
             logging.error(f"[Digivice] JSON decode error: {je}. Resetting data.")
-            self.current_form = self.select_starting_digimon()
-            self.start_time = datetime.now()
-            self.exp = 0
-            self.save_data(first_time=True)
-            self.modify_config()
-            self.restart_device()
+            self.reset_data()
         except Exception as e:
             logging.error(f"[Digivice] Error loading data: {e}. Resetting data.")
-            self.current_form = self.select_starting_digimon()
-            self.start_time = datetime.now()
-            self.exp = 0
-            self.save_data(first_time=True)
-            self.modify_config()
-            self.restart_device()
+            self.reset_data()
+
+    def reset_data(self):
+        self.current_form = self.select_starting_digimon()
+        self.start_time = datetime.now()
+        self.exp = 0
+        self.assoc_count = 0
+        self.deauth_count = 0
+        self.handshake_count = 0
+        self.save_data(first_time=True)
+        self.modify_config()
+        self.restart_device()
 
     def select_starting_digimon(self):
-        """Select starting Digimon based on the config option."""
         if self.starter == "random":
             return random.choice(["agumon", "gabumon"])
         return self.starter
 
     def save_data(self, first_time=False):
-        """Save EXP, evolution form, and start time to JSON."""
         try:
             if first_time or self.start_time is None:
                 self.start_time = datetime.now() 
@@ -114,35 +127,38 @@ class Digivice(plugins.Plugin):
                 "exp": self.exp,
                 "current_form": self.current_form,
                 "start_time": self.start_time.isoformat(),
+                "assoc_count": self.assoc_count,
+                "deauth_count": self.deauth_count,
+                "handshake_count": self.handshake_count
             }
+            
             with open(EXP_FILE, "w") as f:
                 json.dump(data, f, indent=4)
         except Exception as e:
             logging.error(f"[Digivice] Error saving data: {e}")
 
     def get_evolution_stage(self):
-        """Determine evolution based on EXP and Age."""
         if self.age_days < 2:
             return self.current_form
 
         if self.current_form == "agumon":
-            return "greymon" if self.exp >= 500 else "numemon"
-        if self.current_form == "greymon" and self.exp >= 1000:
-            return "metal greymon"
-        if self.current_form == "numemon" and self.exp >= 1000:
-            return "monzaemon"
-
-        if self.current_form == "gabumon":
-            return "kabuterimon" if self.exp >= 500 else "garurumon"
-        if self.current_form == "kabuterimon" and self.exp >= 1000:
-            return "skull greymon"
-        if self.current_form == "garurumon" and self.exp >= 1000:
-            return "metal garurumon"
+            new_form = "greymon" if self.exp >= 500 else "numemon"
+        elif self.current_form == "greymon" and self.exp >= 1000:
+            new_form = "metal greymon"
+        elif self.current_form == "numemon" and self.exp >= 1000:
+            new_form = "monzaemon"
+        elif self.current_form == "gabumon":
+            new_form = "kabuterimon" if self.exp >= 500 else "garurumon"
+        elif self.current_form == "kabuterimon" and self.exp >= 1000:
+            new_form = "skull greymon"
+        elif self.current_form == "garurumon" and self.exp >= 1000:
+            new_form = "metal garurumon"
+        else:
+            new_form = self.current_form
 
         return self.current_form
 
     def update_face_folder(self):
-        """Update face folder if evolution occurs."""
         new_form = self.get_evolution_stage()
         if new_form != self.current_form:
             logging.info(f"[Digivice] Evolving into {new_form}")
@@ -152,7 +168,6 @@ class Digivice(plugins.Plugin):
             self.restart_device()
 
     def modify_config(self):
-        """Modify the face paths in config.toml."""
         try:
             config = pwnagotchi.config
             face_path = FACE_FOLDERS[self.current_form]
@@ -173,38 +188,32 @@ class Digivice(plugins.Plugin):
             save_config(config, "/etc/pwnagotchi/config.toml")
             logging.info("[Digivice] Updated face folder in config.toml")
         except KeyError as ke:
-            logging.error(f"[Digivice] KeyError in modify_config: {ke}. Ensure the current_form '{self.current_form}' exists in FACE_FOLDERS.")
+            logging.error(f"[Digivice] KeyError in modify_config: {ke}")
         except Exception as e:
             logging.error(f"[Digivice] Error modifying config.toml: {e}")
 
     def on_ui_setup(self, ui):
-        """Add EXP bar, Age counter, and Current Form to UI."""
         ui.add_element('name', Text(color=BLACK, value=' ', position=(200, 200), font=fonts.Medium))
-        ui.add_element('channel', LabeledValue(color=BLACK, label='CH', value="00", position=(2, 0), label_font=fonts.Bold, text_font=fonts.Medium))
-        ui.add_element('aps', LabeledValue(color=BLACK, label='APS', value="00", position=(30, 0), label_font=fonts.Bold, text_font=fonts.Medium))
-        ui.add_element('shakes', LabeledValue(color=BLACK, label='PWND ', value='0 (00)', position=(2, 109), label_font=fonts.Bold, text_font=fonts.Medium))
-        ui.add_element('mode', Text(value='AUTO', position=(225, 109), font=fonts.Bold, color=BLACK))
-
-        window_border = Rect(xy=(0, 0, 249, 121), color=BLACK)
-        ui.add_element('window_border', window_border)
-
-        digivice_border = Rect(xy=(0, 14, 123, 76), color=BLACK)
-        ui.add_element('digivice_border', digivice_border)
-        
-        status_divider = Line(xy=(123, 76, 250, 76), color=BLACK, width=1)
-        ui.add_element('status_divider', status_divider)
-
         ui.add_element('current_form', Text(color=BLACK, value="", position=(1, 14), font=fonts.Bold))
-        
-        self.age_icon = Bitmap(AGE_ICON_PATH, xy=(94, 18), color=BLACK)
-        ui.add_element('age_icon', self.age_icon)
-        
-        ui.add_element('age', LabeledValue(color=BLACK, label='', value="", position=(103, 14), label_font=fonts.Bold, text_font=fonts.Medium))
-        
-        ui.add_element('handsk_count', LabeledValue(color=BLACK, label='H:', value="0", position=(52, 28), label_font=fonts.Bold, text_font=fonts.Medium))
-        ui.add_element('assoc_count', LabeledValue(color=BLACK, label='A:', value="0", position=(52, 38), label_font=fonts.Bold, text_font=fonts.Medium))
-        ui.add_element('deauth_count', LabeledValue(color=BLACK, label='D:', value="0", position=(86, 38), label_font=fonts.Bold, text_font=fonts.Medium))
 
+        if self.options['digistats']:
+            self.age_icon = Bitmap(AGE_ICON_PATH, xy=(94, 18), color=BLACK)
+            ui.add_element('age_icon', self.age_icon)
+            ui.add_element('age', LabeledValue(color=BLACK, label='', value="", position=(103, 14), label_font=fonts.Bold, text_font=fonts.Medium))
+            ui.add_element('handsk_count', LabeledValue(color=BLACK, label='H:', value="0", position=(52, 28), label_font=fonts.Bold, text_font=fonts.Medium))
+            ui.add_element('assoc_count', LabeledValue(color=BLACK, label='A:', value="0", position=(52, 38), label_font=fonts.Bold, text_font=fonts.Medium))
+            ui.add_element('deauth_count', LabeledValue(color=BLACK, label='D:', value="0", position=(86, 38), label_font=fonts.Bold, text_font=fonts.Medium))
+            ui.add_element('channel', LabeledValue(color=BLACK, label='CH', value="00", position=(2, 0), label_font=fonts.Bold, text_font=fonts.Medium))
+            ui.add_element('aps', LabeledValue(color=BLACK, label='APS', value="00", position=(30, 0), label_font=fonts.Bold, text_font=fonts.Medium))
+            ui.add_element('shakes', LabeledValue(color=BLACK, label='PWND ', value='0 (00)', position=(2, 109), label_font=fonts.Bold, text_font=fonts.Medium))
+            ui.add_element('mode', Text(value='AUTO', position=(225, 109), font=fonts.Bold, color=BLACK))
+            window_border = Rect(xy=(0, 0, 249, 121), color=BLACK)
+            ui.add_element('window_border', window_border)
+            digivice_border = Rect(xy=(0, 14, 123, 76), color=BLACK)
+            ui.add_element('digivice_border', digivice_border)
+            status_divider = Line(xy=(123, 76, 250, 76), color=BLACK, width=1)
+            ui.add_element('status_divider', status_divider)
+            
         if self.options['xpbar']:
             ui.add_element('xp_count', LabeledValue(color=BLACK, label='XP:', value="", position=(52, 50), label_font=fonts.Bold, text_font=fonts.Medium))
             xpbar_x, xpbar_y = map(int, self.options['xpbar_position'].split(','))
@@ -214,7 +223,6 @@ class Digivice(plugins.Plugin):
             ui.add_element('exp_bar_fill', self.exp_bar_fill)
 
     def on_ui_update(self, ui):
-        """Updates the UI with EXP progress, Age, and Current Form."""
         if self.current_form is None:
             logging.error("[Digivice] current_form is None! Resetting to starter.")
             self.current_form = self.select_starting_digimon()
@@ -249,13 +257,15 @@ class Digivice(plugins.Plugin):
             self.exp_bar_fill.xy = (xpbar_x + 1, xpbar_y + 1, xpbar_x + 1 + bar_width, xpbar_y + 7)
 
         ui.set('current_form', self.current_form.title())
-        ui.set('age', f"{self.age_days}A")
-        ui.set('assoc_count', f"{self.assoc_count}")
-        ui.set('deauth_count', f"{self.deauth_count}")
-        ui.set('handsk_count', f"{self.handshake_count}")
+
+        
+        if self.options['digistats']:
+            ui.set('age', f"{self.age_days}A")
+            ui.set('assoc_count', f"{self.assoc_count}")
+            ui.set('deauth_count', f"{self.deauth_count}")
+            ui.set('handsk_count', f"{self.handshake_count}")
 
     def restart_device(self):
-        """Restart the device after updating the config."""
         try:
             logging.info("[Digivice] Syncing filesystem before reboot...")
             os.system('sync') 
@@ -272,25 +282,21 @@ class Digivice(plugins.Plugin):
             logging.error(f"[Digivice] Error during restart: {e}")
         
     def on_ready(self, agent):
-        """Check for evolution when the device is ready."""
         logging.info("[Digivice] Plugin loaded and ready!")
         self.agent = agent  
         self.update_face_folder()
 
     def on_handshake(self, agent, filename, access_point, client_station):
-        """Gain EXP from handshakes and check for evolution."""
         self.exp += 10
         self.handshake_count += 1
         self.save_data()  
 
     def on_association(self, agent, access_point):
-        """Gain EXP from associations and check for evolution."""
         self.exp += 1
         self.assoc_count += 1
         self.save_data()  
         
     def on_deauthentication(self, agent, access_point, client_station):
-        """Gain EXP from deauthentication attacks and check for evolution."""
         self.exp += 2
         self.deauth_count += 1
         self.save_data()
