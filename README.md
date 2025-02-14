@@ -1,6 +1,7 @@
 # Digivice – A Digimon Evolution Plugin for Pwnagotchi  
 
-![Alt text](preview.png)
+![Alt text](preview.png) ![Alt text](full.png) ![Alt text](compact.png) 
+
 
 Turn your Pwnagotchi into a digital monster with **Digivice Plugin**, a plugin inspired by classic Digivices! Just like in the old-school Digimon toys, your Pwnagotchi will gain experience (EXP), grow older, and evolve into different forms based on its activity.  
 
@@ -47,10 +48,11 @@ Turn your Pwnagotchi into a digital monster with **Digivice Plugin**, a plugin i
 
 ```
 main.plugins.digivice.enabled = true
-main.plugins.digivice.starter = "random"  # Choose 'agumon', 'gabumon', or 'random'
-main.plugins.digivice.xpbar = true
-main.plugins.digivice.xpbar_position = "53,62"
-
+main.plugins.digivice.starter = "random"          # Choose starting Digimon 'agumon', 'gabumon', or 'random'
+main.plugins.digivice.xpbar = true                # Show Exp and Exp bar.
+main.plugins.digivice.xpbar_position = "53,62"    # XP Bar Position
+main.plugins.digivice.digistats = true            # Show Auth, Deauth and Handshake counters, Frames and Age.
+main.plugins.digivice.sessionstats = false        # True = Session based stats  False = Persistent Stats 
 
 
 ui.faces.look_r = "/custom-faces/agumon/look_r.png"
