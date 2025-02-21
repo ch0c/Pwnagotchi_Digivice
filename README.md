@@ -1,43 +1,75 @@
-# Digivice – A Digimon Evolution Plugin for Pwnagotchi  
+# Digivice VPet V1 plugin for Pwnagotchi
 
-![Alt text](preview.png) ![Alt text](full.png) ![Alt text](compact.png) 
+![Alt text](preview.png) ![Alt text](preview1.png)
 
-
-Turn your Pwnagotchi into a digital monster with **Digivice Plugin**, a plugin inspired by classic Digivices! Just like in the old-school Digimon toys, your Pwnagotchi will gain experience (EXP), grow older, and evolve into different forms based on its activity.  
 
 ---
 
-## Features  
+## Features
 
-- **EXP System** – Earn EXP from handshakes, associations, and deauthentication attacks.  
-- **Evolution Paths** – Start with **Agumon** or **Gabumon**, then evolve into:  
-  - Greymon, MetalGreymon  
-  - Garurumon, Metal Garurumon  
-  - Numemon, Monzaemon  
-  - Kabuterimon, Skull Greymon  
+- **Choose your starter Digimon**: Agumon, Betamon, Gabumon, or Random.
+- **Evolve based on experience (XP)** earned from deauths, handshakes, and associations.
+- **Multi-stage evolution** with different paths depending on your digimons activity.
+- **Custom faces** for each Digimon stage.
+- **On-screen XP bar and stats** to track your Digimon’s progress.
+- **Configurable settings** via Pwnagotchi’s config.
+- **Automatic evolution and restarts** when conditions are met.
+- **Life-span mechanic** to reset and start fresh after a set number of days.
+- **Scaled difficulty** based on age.
+---
 
-- **Live Stats** – Displays your Digimon’s **form, age, EXP bar, and handshake count** in the UI.  
-- **Auto-Saving & Config Updates** – Tracks progress and updates `config.toml`.  
-- **Auto-Restart on Evolution** – Ensures smooth transitions when evolving.  
-- **Evolution Reset** – Every **5 days**, your Digimon resets to an either Agumon or Gabumon for a fresh start.  
+## How XP Works
+
+| Action       | XP Gained  |
+|-------------|-----------|
+| Deauth      | 1.2 XP    |
+| Handshake   | 1.5 XP    |
+| Association | 0.8 XP    |
+
+- **Rookie Evolution Requirement**: `1500 XP`
+- **Champion Evolution Requirement**: `3000 XP`
+- **Life-span Reset**: `15+ Days` (Can be customized)
 
 ---
 
-## Evolution Rules  
+## Evolution Paths
 
-### At 2 Days Old  
-| Starting Form | Evolution (EXP ≥ 500) | Evolution (EXP ≤ 499) |
-|--------------|--------------------|--------------------|
-| Agumon      | Greymon            | Numemon            |
-| Gabumon     | Kabuterimon        | Garurumon          |
+### **Rookie Evolution**
+After reaching **1500 XP**, your Digimon can evolve into different **Champion** forms based on hacking activity.
 
-### At 1000 EXP  
-| Current Form  | Evolution |
-|--------------|-----------|
-| Greymon     | Metal Greymon |
-| Numemon     | Monzaemon |
-| Kabuterimon | Skull Greymon |
-| Garurumon   | Metal Garurumon |
+| Rookie    | Evolution Options | Requirements |
+|-----------|------------------|-------------|
+| **Agumon**  | Greymon  | `40 Deauths` + `80 Handshakes` |
+|           | Tyrannomon  | `70 Handshakes` |
+|           | Devimon  | `50 Deauths` |
+|           | Meramon  | `800 Associations` |
+|           | Numemon  | **Random chance** |
+| **Betamon**  | Devimon  | `40 Deauths` + `80 Handshakes` |
+|           | Meramon  | `70 Handshakes` |
+|           | Airdramon  | `50 Deauths` |
+|           | Seadramon  | `800 Associations` |
+|           | Numemon  | **Random chance** |
+| **Gabumon** | Garurumon  | `40 Deauths` + `80 Handshakes` |
+|           | Kabuterimon  | `90 Handshakes` |
+|           | Numemon  | **Random chance** |
+
+### **Champion Evolution**
+After reaching **3000 XP**, your Digimon can evolve into **Ultimate** forms.
+
+| Champion | Evolution | Requirements |
+|----------|-----------|-------------|
+| **Greymon** | Metal Greymon | `60 Deauths` + `120 Handshakes` |
+| **Garurumon** | Metal Garurumon | `1200 Associations` + `120 Handshakes` |
+| **Kabuterimon** | Skull Greymon | `110 Handshakes` |
+| **Tyrannomon** | Mamemon | `110 Handshakes` |
+| **Meramon** | Mamemon | `1300 Associations` |
+| **Seadramon** | Mamemon | `1300 Associations` |
+| **Devimon** | Metal Greymon | `60 Deauths` + `120 Handshakes` |
+| **Airdramon** | Metal Greymon | `60 Deauths` + `120 Handshakes` |
+| **Numemon** | Monzaemon | `1300 Associations` + `60 Deauths` |
+
+
+<sub><em>Note: All requirements are scaled based on Digimon age. Numemon has 20% random chance if conditions not met.</em></sub>
 
 ---
 
@@ -48,13 +80,14 @@ Turn your Pwnagotchi into a digital monster with **Digivice Plugin**, a plugin i
 
 ```
 main.plugins.digivice.enabled = true
-main.plugins.digivice.starter = "random"          # Choose starting Digimon 'agumon', 'gabumon', or 'random'
-main.plugins.digivice.xpbar = true                # Show Exp and Exp bar.
+main.plugins.digivice.starter = "random"          # Choose starting Digimon agumon, betamon, gabumon, or random.
 main.plugins.digivice.xpbar_position = "53,62"    # XP Bar Position
 main.plugins.digivice.digistats = true            # Show Auth, Deauth and Handshake counters, Frames and Age.
-main.plugins.digivice.sessionstats = false        # True = Session based stats  False = Persistent Stats 
+main.plugins.digivice.life_span = 10              # After this many days digimon will revert to starter digimon.
+```
 
-
+## Config Options.
+```
 ui.faces.look_r = "/custom-faces/agumon/look_r.png"
 ui.faces.look_l = "/custom-faces/agumon/look_l.png"
 ui.faces.look_r_happy = "/custom-faces/agumon/look_r_happy.png"
@@ -86,8 +119,10 @@ ui.faces.position_y = 26
 
 ```
 
-
-
+## Optional. 
+```
+ui.fps = 1
+```
 
 
 
