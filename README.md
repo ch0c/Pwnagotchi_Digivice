@@ -81,7 +81,7 @@ After reaching **3000 XP**, your Digimon can evolve into **Ultimate** forms.
 ```
 main.plugins.digivice.enabled = true
 main.plugins.digivice.starter = "random"          # Choose starting Digimon agumon, betamon, gabumon, or random.
-main.plugins.digivice.xpbar_position = "53,62"    # XP Bar Position
+main.plugins.digivice.xpbar_position = "53,64"    # XP Bar Position
 main.plugins.digivice.digistats = true            # Show Auth, Deauth and Handshake counters, Frames and Age.
 main.plugins.digivice.life_span = 10              # After this many days digimon will revert to starter digimon.
 ```
