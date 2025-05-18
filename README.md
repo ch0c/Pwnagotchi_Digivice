@@ -125,7 +125,9 @@ ui.fps = 1
 ```
 
 
+Sync the RTC clock on boot, otherwise your digimon wont age until connected to the internet.
 
+https://github.com/ch0c/Pwny-RTC-Sync
 
 
 
